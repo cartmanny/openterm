@@ -2,10 +2,21 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-// WebSocket base URL - uses same host as API
-const WS_BASE = typeof window !== 'undefined'
-  ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:8000/ws`
-  : 'ws://localhost:8000/ws';
+// WebSocket base URL - uses relative path through Next.js rewrites, or direct connection
+const getWsBase = () => {
+  if (typeof window === 'undefined') return 'ws://localhost:8000/ws';
+
+  // Use environment variable if available, otherwise construct from window location
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (backendUrl) {
+    return backendUrl.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws';
+  }
+
+  // Fallback: use same host (works in development with docker-compose)
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = window.location.host; // includes port if present
+  return `${protocol}//${host}/ws`;
+};
 
 export interface QuoteUpdate {
   type: 'quote' | 'trade' | 'heartbeat';
@@ -87,7 +98,7 @@ export function useRealtimeStream(
   const connect = useCallback(() => {
     if (!ticker || !enabled) return;
 
-    const url = `${WS_BASE}/stream/${ticker}`;
+    const url = `${getWsBase()}/stream/${ticker}`;
 
     try {
       const ws = new WebSocket(url);
@@ -171,7 +182,7 @@ export function useOrderBook(
   useEffect(() => {
     if (!symbol || !enabled) return;
 
-    const url = `${WS_BASE}/orderbook/${symbol}`;
+    const url = `${getWsBase()}/orderbook/${symbol}`;
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
@@ -212,7 +223,7 @@ export function useSectorStream(options: UseRealtimeStreamOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const url = `${WS_BASE}/sectors`;
+    const url = `${getWsBase()}/sectors`;
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
@@ -253,7 +264,7 @@ export function useTickerTape(options: UseRealtimeStreamOptions = {}) {
   useEffect(() => {
     if (!enabled) return;
 
-    const url = `${WS_BASE}/tape`;
+    const url = `${getWsBase()}/tape`;
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
