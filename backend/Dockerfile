@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy application code first
 COPY . .
 
+# Make startup script executable
+RUN chmod +x start.sh
+
 # Install the package (not editable for production)
 RUN pip install --no-cache-dir .
 

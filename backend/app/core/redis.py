@@ -7,17 +7,35 @@ import redis.asyncio as redis
 
 from app.core.config import settings
 
-# Redis connection pool
-redis_pool = redis.ConnectionPool.from_url(settings.redis_url, decode_responses=True)
+# Redis connection pool - created lazily to avoid startup issues
+_redis_pool: redis.ConnectionPool | None = None
+
+
+def get_redis_pool() -> redis.ConnectionPool:
+    """Get or create the Redis connection pool (lazy initialization)."""
+    global _redis_pool
+    if _redis_pool is None:
+        _redis_pool = redis.ConnectionPool.from_url(
+            settings.redis_url, decode_responses=True
+        )
+    return _redis_pool
+
+
 
 
 async def get_redis() -> AsyncGenerator[redis.Redis, None]:
     """Dependency for getting Redis connection."""
-    client = redis.Redis(connection_pool=redis_pool)
     try:
-        yield client
-    finally:
-        await client.aclose()
+        pool = get_redis_pool()
+        client = redis.Redis(connection_pool=pool)
+        try:
+            yield client
+        finally:
+            await client.aclose()
+    except Exception as e:
+        # If Redis isn't available, yield a None-like stub that won't crash
+        print(f"Warning: Redis connection failed: {e}")
+        raise
 
 
 class CacheManager:

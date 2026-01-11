@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import redis.asyncio as redis
 
 from app.core.database import async_session_maker
-from app.core.redis import CacheManager, redis_pool
+from app.core.redis import CacheManager, get_redis_pool
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -21,8 +21,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def get_redis() -> AsyncGenerator[redis.Redis, None]:
-    """Get Redis connection dependency."""
-    client = redis.Redis(connection_pool=redis_pool)
+    """Get Redis connection dependency (lazy initialization)."""
+    pool = get_redis_pool()
+    client = redis.Redis(connection_pool=pool)
     try:
         yield client
     finally:

@@ -18,7 +18,7 @@ def get_async_database_url() -> str:
     return url
 
 
-# Create async engine
+# Create async engine (connections are lazy - doesn't actually connect until used)
 engine = create_async_engine(
     get_async_database_url(),
     echo=settings.debug,

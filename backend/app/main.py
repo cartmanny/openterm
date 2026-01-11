@@ -1,5 +1,7 @@
 """FastAPI application entry point."""
 import os
+import sys
+import logging
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
@@ -20,10 +22,26 @@ from app.websocket.streamer import (
     ticker_tape_streamer,
 )
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan handler."""
+    logger.info("=" * 50)
+    logger.info("OpenTerm starting up...")
+    logger.info(f"Database URL configured: {'Yes' if settings.database_url else 'No'}")
+    logger.info(f"Redis URL configured: {'Yes' if settings.redis_url else 'No'}")
+    logger.info(f"FRED API key configured: {'Yes' if settings.fred_api_key else 'No'}")
+    logger.info(f"Finnhub API key configured: {'Yes' if settings.finnhub_api_key else 'No'}")
+    logger.info("=" * 50)
+
     # Startup
     # Register rate limiters for sources
     rate_limiter.register("stooq", settings.stooq_rpm)
@@ -31,27 +49,32 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     rate_limiter.register("sec_edgar", settings.edgar_rps * 60)
     rate_limiter.register("fred", settings.fred_rpm)
     rate_limiter.register("finnhub", settings.finnhub_rpm)
+    logger.info("Rate limiters registered")
 
     # Start WebSocket streamers (non-blocking, failures shouldn't stop the app)
     try:
         await data_streamer.start()
+        logger.info("Data streamer started")
     except Exception as e:
-        print(f"Warning: Failed to start data_streamer: {e}")
+        logger.warning(f"Failed to start data_streamer: {e}")
 
     try:
         await crypto_streamer.start()
+        logger.info("Crypto streamer started")
     except Exception as e:
-        print(f"Warning: Failed to start crypto_streamer: {e}")
+        logger.warning(f"Failed to start crypto_streamer: {e}")
 
     try:
         await sector_streamer.start()
+        logger.info("Sector streamer started")
     except Exception as e:
-        print(f"Warning: Failed to start sector_streamer: {e}")
+        logger.warning(f"Failed to start sector_streamer: {e}")
 
     try:
         await ticker_tape_streamer.start()
+        logger.info("Ticker tape streamer started")
     except Exception as e:
-        print(f"Warning: Failed to start ticker_tape_streamer: {e}")
+        logger.warning(f"Failed to start ticker_tape_streamer: {e}")
 
     yield
 
@@ -141,4 +164,10 @@ async def health_check() -> dict:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": settings.app_version,
         "service": settings.app_name,
+        "config": {
+            "database_configured": bool(settings.database_url and "localhost" not in settings.database_url),
+            "redis_configured": bool(settings.redis_url and "localhost" not in settings.redis_url),
+            "fred_key": bool(settings.fred_api_key),
+            "finnhub_key": bool(settings.finnhub_api_key),
+        }
     }
