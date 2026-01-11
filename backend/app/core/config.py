@@ -1,6 +1,21 @@
 """Application configuration from environment variables."""
+import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings
+
+
+def get_database_url() -> str:
+    """Get database URL, converting Railway's format to asyncpg format."""
+    url = os.getenv("DATABASE_URL", "postgresql+asyncpg://openterm:openterm@localhost:5432/openterm")
+    # Railway uses postgresql:// but SQLAlchemy async needs postgresql+asyncpg://
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
+
+def get_redis_url() -> str:
+    """Get Redis URL from environment."""
+    return os.getenv("REDIS_URL", "redis://localhost:6379")
 
 
 class Settings(BaseSettings):
@@ -11,11 +26,11 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = False
 
-    # Database
-    database_url: str = "postgresql+asyncpg://openterm:openterm@localhost:5432/openterm"
+    # Database - use factory to handle Railway's URL format
+    database_url: str = get_database_url()
 
     # Redis
-    redis_url: str = "redis://localhost:6379"
+    redis_url: str = get_redis_url()
 
     # API Keys (Free Tier)
     fred_api_key: str = ""
