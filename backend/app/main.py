@@ -32,19 +32,46 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     rate_limiter.register("fred", settings.fred_rpm)
     rate_limiter.register("finnhub", settings.finnhub_rpm)
 
-    # Start WebSocket streamers
-    await data_streamer.start()
-    await crypto_streamer.start()
-    await sector_streamer.start()
-    await ticker_tape_streamer.start()
+    # Start WebSocket streamers (non-blocking, failures shouldn't stop the app)
+    try:
+        await data_streamer.start()
+    except Exception as e:
+        print(f"Warning: Failed to start data_streamer: {e}")
+
+    try:
+        await crypto_streamer.start()
+    except Exception as e:
+        print(f"Warning: Failed to start crypto_streamer: {e}")
+
+    try:
+        await sector_streamer.start()
+    except Exception as e:
+        print(f"Warning: Failed to start sector_streamer: {e}")
+
+    try:
+        await ticker_tape_streamer.start()
+    except Exception as e:
+        print(f"Warning: Failed to start ticker_tape_streamer: {e}")
 
     yield
 
-    # Shutdown
-    await data_streamer.stop()
-    await crypto_streamer.stop()
-    await sector_streamer.stop()
-    await ticker_tape_streamer.stop()
+    # Shutdown (ignore errors)
+    try:
+        await data_streamer.stop()
+    except Exception:
+        pass
+    try:
+        await crypto_streamer.stop()
+    except Exception:
+        pass
+    try:
+        await sector_streamer.stop()
+    except Exception:
+        pass
+    try:
+        await ticker_tape_streamer.stop()
+    except Exception:
+        pass
 
 
 app = FastAPI(
@@ -54,24 +81,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware - allow frontend origins
-allowed_origins = [
-    "http://localhost:3000",  # Local development
-]
-
-# Add production frontend URL if set
-frontend_url = os.getenv("FRONTEND_URL")
-if frontend_url:
-    allowed_origins.append(frontend_url)
-
-# Add Vercel preview URLs pattern
-vercel_url = os.getenv("VERCEL_URL")
-if vercel_url:
-    allowed_origins.append(f"https://{vercel_url}")
-
+# CORS middleware - allow all origins for now (can restrict later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
