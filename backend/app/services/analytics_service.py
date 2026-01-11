@@ -6,7 +6,7 @@ import math
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import async_session
+from app.core.database import async_session_maker
 from app.models.instrument import Instrument, Listing
 from app.models.price import DailyPrice
 from app.schemas.common import ResponseMeta
@@ -53,7 +53,7 @@ class AnalyticsService:
         days = self.PERIOD_DAYS.get(period, 365)
         start_date = end_date - timedelta(days=days)
 
-        async with async_session() as session:
+        async with async_session_maker() as session:
             # Get returns for each ticker
             returns_by_ticker = {}
 
@@ -163,7 +163,7 @@ class AnalyticsService:
         days = self.PERIOD_DAYS.get(period, 365)
         start_date = end_date - timedelta(days=days)
 
-        async with async_session() as session:
+        async with async_session_maker() as session:
             series_list = []
 
             for ticker in tickers:

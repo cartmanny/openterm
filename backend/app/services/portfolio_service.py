@@ -7,7 +7,7 @@ import math
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import async_session
+from app.core.database import async_session_maker
 from app.models.portfolio import Portfolio, Transaction
 from app.models.instrument import Instrument
 from app.models.price import DailyPrice
@@ -30,7 +30,7 @@ class PortfolioService:
 
     async def get_portfolio(self, portfolio_id: UUID) -> PortfolioDetailResponse | None:
         """Get portfolio with holdings and summary."""
-        async with async_session() as session:
+        async with async_session_maker() as session:
             # Get portfolio
             result = await session.execute(
                 select(Portfolio).where(Portfolio.id == portfolio_id)
@@ -204,7 +204,7 @@ class PortfolioService:
 
     async def get_analytics(self, portfolio_id: UUID) -> PortfolioAnalyticsResponse | None:
         """Get portfolio analytics including risk metrics."""
-        async with async_session() as session:
+        async with async_session_maker() as session:
             # Get portfolio
             result = await session.execute(
                 select(Portfolio).where(Portfolio.id == portfolio_id)
@@ -370,7 +370,7 @@ class PortfolioService:
 
     async def create_portfolio(self, data: PortfolioCreate) -> PortfolioSchema:
         """Create a new portfolio."""
-        async with async_session() as session:
+        async with async_session_maker() as session:
             portfolio = Portfolio(
                 name=data.name,
                 description=data.description,
@@ -394,7 +394,7 @@ class PortfolioService:
         self, portfolio_id: UUID, data: TransactionCreate
     ) -> TransactionSchema:
         """Add a transaction to a portfolio."""
-        async with async_session() as session:
+        async with async_session_maker() as session:
             transaction = Transaction(
                 portfolio_id=portfolio_id,
                 instrument_id=data.instrument_id,

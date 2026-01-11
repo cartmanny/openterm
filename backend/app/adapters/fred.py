@@ -4,7 +4,7 @@ Free tier: 1000 calls/day (conservative limit: 60/min)
 API docs: https://fred.stlouisfed.org/docs/api/fred/
 """
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from app.adapters.base import BaseAdapter, InstrumentCandidate, InstrumentProfile, Bar
@@ -340,7 +340,3 @@ class FREDAdapter(BaseAdapter):
     ) -> list[Bar]:
         """FRED doesn't have OHLCV bars."""
         return []
-
-
-# Import timedelta for yield curve
-from datetime import timedelta

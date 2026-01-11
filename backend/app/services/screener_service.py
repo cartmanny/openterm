@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import select, and_, or_, func, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import async_session
+from app.core.database import async_session_maker
 from app.models.screener import DerivedFacts
 from app.models.fundamentals import Fundamentals
 from app.models.instrument import Instrument
@@ -86,7 +86,7 @@ class ScreenerService:
         Returns:
             ScreenerResponse with matching stocks
         """
-        async with async_session() as session:
+        async with async_session_maker() as session:
             # Build base query
             query = select(DerivedFacts)
 

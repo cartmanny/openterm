@@ -189,7 +189,3 @@ class NewsAdapter(BaseAdapter):
     ) -> list[Bar]:
         """News adapter doesn't have bars."""
         return []
-
-
-# Import at end to avoid circular import
-from datetime import date, timedelta
