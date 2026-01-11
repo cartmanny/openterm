@@ -35,8 +35,14 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    """Get database URL from settings."""
-    return settings.database_url
+    """Get database URL from settings, converting to async format."""
+    url = settings.database_url
+    # Railway uses postgresql:// but SQLAlchemy async needs postgresql+asyncpg://
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+    return url
 
 
 def run_migrations_offline() -> None:

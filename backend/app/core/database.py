@@ -6,9 +6,21 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
+
+def get_async_database_url() -> str:
+    """Convert database URL to async format for SQLAlchemy."""
+    url = settings.database_url
+    # Railway uses postgresql:// but SQLAlchemy async needs postgresql+asyncpg://
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+    return url
+
+
 # Create async engine
 engine = create_async_engine(
-    settings.database_url,
+    get_async_database_url(),
     echo=settings.debug,
     pool_size=20,
     max_overflow=10,
