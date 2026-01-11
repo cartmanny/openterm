@@ -10,17 +10,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY pyproject.toml .
-
-# Install the package
-RUN pip install --no-cache-dir -e .
-
-# Install additional dependencies for production
-RUN pip install --no-cache-dir aiohttp websockets
-
-# Copy application code
+# Copy application code first
 COPY . .
+
+# Install the package (not editable for production)
+RUN pip install --no-cache-dir .
 
 # Railway uses PORT environment variable
 ENV PORT=8000
