@@ -1,24 +1,15 @@
 #!/bin/bash
-set -e
 
 echo "=================================="
 echo "OpenTerm Startup Script"
 echo "=================================="
-echo "PORT: ${PORT:-not set}"
-echo "DATABASE_URL: ${DATABASE_URL:+configured}"
-echo "REDIS_URL: ${REDIS_URL:+configured}"
-echo "FRED_API_KEY: ${FRED_API_KEY:+configured}"
-echo "FINNHUB_API_KEY: ${FINNHUB_API_KEY:+configured}"
+echo "PORT: ${PORT:-8000}"
+echo "DATABASE_URL configured: ${DATABASE_URL:+yes}"
+echo "REDIS_URL configured: ${REDIS_URL:+yes}"
 echo "=================================="
 
-# Run database migrations (continue even if it fails for now)
-echo "Running database migrations..."
-if alembic upgrade head; then
-    echo "Migrations completed successfully"
-else
-    echo "WARNING: Migrations failed, but continuing startup..."
-    echo "The app may have limited functionality without database access."
-fi
+# Skip alembic for now - database might not be ready
+# alembic upgrade head || echo "Migrations skipped"
 
 # Start the application
 echo "Starting uvicorn on port ${PORT:-8000}..."
