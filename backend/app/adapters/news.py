@@ -4,7 +4,7 @@ Finnhub free tier: 60 calls/minute
 API docs: https://finnhub.io/docs/api/market-news
 """
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.adapters.base import BaseAdapter, InstrumentCandidate, InstrumentProfile, Bar
