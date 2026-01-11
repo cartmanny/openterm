@@ -1,8 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Rewrites are handled by vercel.json in production
-  // For local development, use NEXT_PUBLIC_BACKEND_URL env var
+  async rewrites() {
+    // Use Railway backend in production, localhost in development
+    const backendUrl = process.env.NODE_ENV === 'production'
+      ? 'https://openterm-production.up.railway.app'
+      : 'http://localhost:8000';
+
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
