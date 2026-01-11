@@ -4,10 +4,9 @@ const BACKEND_URL = 'https://openterm-production.up.railway.app';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  { params }: { params: { path: string[] } }
 ) {
-  const { path } = await params;
-  const pathStr = path.join('/');
+  const pathStr = params.path.join('/');
   const searchParams = request.nextUrl.searchParams.toString();
   const url = `${BACKEND_URL}/api/v1/${pathStr}${searchParams ? `?${searchParams}` : ''}`;
 
@@ -30,10 +29,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  { params }: { params: { path: string[] } }
 ) {
-  const { path } = await params;
-  const pathStr = path.join('/');
+  const pathStr = params.path.join('/');
   const url = `${BACKEND_URL}/api/v1/${pathStr}`;
 
   try {
@@ -58,10 +56,9 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  { params }: { params: { path: string[] } }
 ) {
-  const { path } = await params;
-  const pathStr = path.join('/');
+  const pathStr = params.path.join('/');
   const url = `${BACKEND_URL}/api/v1/${pathStr}`;
 
   try {
@@ -86,10 +83,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  { params }: { params: { path: string[] } }
 ) {
-  const { path } = await params;
-  const pathStr = path.join('/');
+  const pathStr = params.path.join('/');
   const url = `${BACKEND_URL}/api/v1/${pathStr}`;
 
   try {
