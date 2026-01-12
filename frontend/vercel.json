@@ -31,10 +31,6 @@
   ],
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://openterm-production.up.railway.app/api/:path*"
-    },
-    {
       "source": "/ws/:path*",
       "destination": "https://openterm-production.up.railway.app/ws/:path*"
     }
